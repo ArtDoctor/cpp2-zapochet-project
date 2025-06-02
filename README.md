@@ -1,4 +1,4 @@
-# C++ SFML Project
+# TODO: update this
 
 This is a C++ project that uses the [SFML](https://www.sfml-dev.org/) library for graphics, window management, and system functionality.
 

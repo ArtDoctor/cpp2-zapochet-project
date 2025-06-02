@@ -1,6 +1,8 @@
 #!/bin/bash
 g++ -fdiagnostics-color=always -g *.cpp \
     -lsfml-graphics -lsfml-window -lsfml-system \
-    -o "main"
+    -lbox2d \
+    -o main
+
 export DISPLAY=:0
 ./main
