@@ -52,15 +52,20 @@ Bicycle::Bicycle(b2World* world) {
     bikeFrame = sf::RectangleShape(sf::Vector2f(60.0f, 20.0f));
     bikeFrame.setOrigin(30.0f, 15.0f);
     bikeFrame.setFillColor(sf::Color::Blue);
+
+    accumulatedAngle = 0.0f;
+    lastAngle = 0.0f;
 }
 
 void Bicycle::reset() {
     bike->SetTransform(b2Vec2(100.0f / SCALE, 300.0f / SCALE), 0.0f);
     bike->SetLinearVelocity(b2Vec2(0.0f, 0.0f));
     bike->SetAngularVelocity(0.0f);
+    accumulatedAngle = 0.0f;
+    lastAngle = 0.0f;
 }
 
-void Bicycle::updatePhysics(bool spacePressed) {
+bool Bicycle::updatePhysics(bool spacePressed) {
     // Update the bike's physics based on user input
     b2Vec2 velocity = bike->GetLinearVelocity();
     if (spacePressed) {
@@ -83,6 +88,20 @@ void Bicycle::updatePhysics(bool spacePressed) {
         float currentAngularVel = bike->GetAngularVelocity();
         bike->SetAngularVelocity(currentAngularVel * ANGULAR_FRICTION);
     }
+
+    // --- Full rotation detection ---
+    float currentAngle = bike->GetAngle();
+    float delta = currentAngle - lastAngle;
+    // Normalize delta to [-PI, PI]
+    if (delta > PI) delta -= 2 * PI;
+    if (delta < -PI) delta += 2 * PI;
+    accumulatedAngle += delta;
+    lastAngle = currentAngle;
+    if (std::abs(accumulatedAngle) >= 2 * PI) {
+        accumulatedAngle = 0.0f;
+        return true;
+    }
+    return false;
 }
 
 void Bicycle::updateVisuals() {

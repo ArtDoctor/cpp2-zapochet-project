@@ -18,6 +18,22 @@ Game::Game()
     // Initialize random number generator
     std::random_device rd;
     gen = std::mt19937(rd());
+
+    // --- Score system setup ---
+    if (!font.loadFromFile("DejaVuSans.ttf")) {
+        std::cerr << "Error: Could not load font DejaVuSans.ttf for score display" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    score = 0;
+    scoreText.setFont(font);
+    scoreText.setCharacterSize(48);
+    scoreText.setFillColor(sf::Color::White);
+    scoreText.setStyle(sf::Text::Bold);
+    scoreText.setString("0");
+    // Centered at top
+    sf::FloatRect textBounds = scoreText.getLocalBounds();
+    scoreText.setOrigin(textBounds.width / 2.0f, textBounds.height / 2.0f);
+    scoreText.setPosition(SCREEN_WIDTH / 2.0f, 40.0f);
 }
 
 void Game::run() {
@@ -52,12 +68,22 @@ void Game::handleInput() {
                 gameOverUI.closeWindow();
                 isGameOver = false;
                 bike.reset();
+                score = 0;
+                scoreText.setString("0");
+                sf::FloatRect textBounds = scoreText.getLocalBounds();
+                scoreText.setOrigin(textBounds.width / 2.0f, textBounds.height / 2.0f);
+                scoreText.setPosition(SCREEN_WIDTH / 2.0f, 40.0f);
             }
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 if (gameOverUI.isRestartClicked(event.mouseButton.x, event.mouseButton.y)) {
                     gameOverUI.closeWindow();
                     isGameOver = false;
                     bike.reset();
+                    score = 0;
+                    scoreText.setString("0");
+                    sf::FloatRect textBounds = scoreText.getLocalBounds();
+                    scoreText.setOrigin(textBounds.width / 2.0f, textBounds.height / 2.0f);
+                    scoreText.setPosition(SCREEN_WIDTH / 2.0f, 40.0f);
                 }
             }
         }
@@ -67,7 +93,12 @@ void Game::handleInput() {
 void Game::updatePhysics() {
     // Update the physics world and bike
     bool spacePressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
-    bike.updatePhysics(spacePressed);
+    if (bike.updatePhysics(spacePressed)) {
+        score++;
+        scoreText.setString(std::to_string(score));
+        sf::FloatRect textBounds = scoreText.getLocalBounds();
+        scoreText.setOrigin(textBounds.width / 2.0f, textBounds.height / 2.0f);
+    }
     world.Step(1.0f / 60.0f, 8, 3);
 }
 
@@ -123,6 +154,11 @@ void Game::checkGameOver() {
         }
         isGameOver = true;
         gameOverUI.openWindow();
+        score = 0;
+        scoreText.setString("0");
+        sf::FloatRect textBounds = scoreText.getLocalBounds();
+        scoreText.setOrigin(textBounds.width / 2.0f, textBounds.height / 2.0f);
+        scoreText.setPosition(SCREEN_WIDTH / 2.0f, 40.0f);
     }
 }
 
@@ -132,6 +168,10 @@ void Game::render() {
     window.clear(sf::Color::Black);
     terrain.render(window);
     bike.render(window);
+    // Update scoreText position to follow the view
+    sf::Vector2f viewCenter = view.getCenter();
+    scoreText.setPosition(viewCenter.x, 40.0f + viewCenter.y - SCREEN_HEIGHT / 2.0f);
+    window.draw(scoreText);
     window.display();
     gameOverUI.render();
 }

@@ -29,6 +29,11 @@ private:
     Terrain terrain;
     GameOverUI gameOverUI;
 
+    // Score system
+    int score = 0;
+    sf::Font font;
+    sf::Text scoreText;
+
     // Helper functions
     void handleInput();
     void updatePhysics();

@@ -17,7 +17,8 @@ class Bicycle {
 public:
     Bicycle(b2World* world);
     void reset();
-    void updatePhysics(bool spacePressed);
+    // Returns true if a full rotation is completed this frame
+    bool updatePhysics(bool spacePressed);
     void updateVisuals();
     void render(sf::RenderWindow& window);
     b2Body* getBody() const { return bike; }
@@ -28,6 +29,8 @@ private:
     sf::CircleShape frontWheel;
     sf::CircleShape rearWheel;
     sf::RectangleShape bikeFrame;
+    float accumulatedAngle = 0.0f;
+    float lastAngle = 0.0f;
 };
 
 #endif // BICYCLE_H
