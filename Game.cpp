@@ -11,14 +11,17 @@ Game::Game()
     , gameOverUI()
     , isGameOver(false)
 {
+    // Set up the main window
     window.setVerticalSyncEnabled(false);
     window.setFramerateLimit(60);
     
+    // Initialize random number generator
     std::random_device rd;
     gen = std::mt19937(rd());
 }
 
 void Game::run() {
+    // Main game loop
     while (window.isOpen()) {
         handleInput();
         
@@ -33,6 +36,7 @@ void Game::run() {
 }
 
 void Game::handleInput() {
+    // Handle window and UI events
     sf::Event event;
     while (window.pollEvent(event)) {
         if (event.type == sf::Event::Closed) {
@@ -41,6 +45,7 @@ void Game::handleInput() {
         }
     }
 
+    // Handle game over UI events
     if (gameOverUI.isWindowOpen()) {
         while (gameOverUI.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
@@ -60,16 +65,19 @@ void Game::handleInput() {
 }
 
 void Game::updatePhysics() {
+    // Update the physics world and bike
     bool spacePressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
     bike.updatePhysics(spacePressed);
     world.Step(1.0f / 60.0f, 8, 3);
 }
 
 void Game::updateVisuals() {
+    // Update visuals and camera view
     b2Vec2 pos = bike.getPosition();
     bike.updateVisuals();
     terrain.extendIfNeeded(pos.x * SCALE, gen);
     
+    // Smoothly follow the bike with the camera
     sf::Vector2f target(pos.x * SCALE, 300.0f);
     sf::Vector2f current = view.getCenter();
     float smoothing = 0.1f;
@@ -77,6 +85,7 @@ void Game::updateVisuals() {
 }
 
 void Game::checkGameOver() {
+    // Check if the bike has hit the ground or fallen off the screen
     b2Vec2 pos = bike.getPosition();
     bool frameHitGround = false;
 
@@ -97,10 +106,12 @@ void Game::checkGameOver() {
             if (bikeFixture && groundFixture && groundFixture->GetBody() == terrain.getBody()) {
                 uintptr_t userData = bikeFixture->GetUserData().pointer;
                 if (userData == 1) {
+                    // The bike frame hit the ground
                     frameHitGround = true;
                     std::cout << "Game Over: Bike frame hit ground" << std::endl;
                     break;
                 } else if (userData == 2) {
+                    // Wheel hit ground (not game over)
                 }
             }
         }
@@ -116,6 +127,7 @@ void Game::checkGameOver() {
 }
 
 void Game::render() {
+    // Render the game scene and UI
     window.setView(view);
     window.clear(sf::Color::Black);
     terrain.render(window);

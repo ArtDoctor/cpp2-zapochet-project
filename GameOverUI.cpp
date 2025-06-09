@@ -1,8 +1,13 @@
 #include "GameOverUI.h"
+#include <iostream>
 
 GameOverUI::GameOverUI() {
+    // Attempt to load the font for UI text
     if (!font.loadFromFile("DejaVuSans.ttf")) {
-        // Fallback font loading
+        // Fallback font loading or error handling
+        // For now, print an error and exit
+        std::cerr << "Error: Could not load font DejaVuSans.ttf" << std::endl;
+        std::exit(EXIT_FAILURE);
     }
 
     gameOverText.setFont(font);

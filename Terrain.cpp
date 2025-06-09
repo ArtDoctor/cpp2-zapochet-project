@@ -8,6 +8,7 @@ Terrain::Terrain(b2World* world) : endX(3000.0f), baseY(350.0f) {
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 2);
 
+    // Generate initial terrain segments
     for (float x = startX; x < endX; x += SEGMENT_LENGTH) {
         int pathType = dis(gen);
         auto segmentPoints = generatePath(x, x + SEGMENT_LENGTH, 30.0f, pathType, baseY);
@@ -17,6 +18,7 @@ Terrain::Terrain(b2World* world) : endX(3000.0f), baseY(350.0f) {
         }
     }
 
+    // Create the Box2D ground body and attach the terrain shape
     b2BodyDef groundDef;
     ground = world->CreateBody(&groundDef);
     if (!points.empty()) {
@@ -27,6 +29,7 @@ Terrain::Terrain(b2World* world) : endX(3000.0f), baseY(350.0f) {
 }
 
 std::vector<b2Vec2> Terrain::generatePath(float startX, float endX, float step, int pathType, float startY) {
+    // Generate a vector of points for a terrain segment based on the path type
     std::vector<b2Vec2> points;
     for (float x = startX; x <= endX; x += step) {
         float y;
@@ -50,6 +53,7 @@ std::vector<b2Vec2> Terrain::generatePath(float startX, float endX, float step, 
 }
 
 void Terrain::extendIfNeeded(float bikeX, std::mt19937& gen) {
+    // If the bike is near the end of the current terrain, generate more terrain
     if (bikeX > endX - GENERATE_THRESHOLD) {
         std::uniform_int_distribution<> dis(0, 2);
         int pathType = dis(gen);
@@ -64,7 +68,14 @@ void Terrain::extendIfNeeded(float bikeX, std::mt19937& gen) {
             terrainVisual.emplace_back(sf::Vector2f(p.x * SCALE, p.y * SCALE), sf::Color::Green);
         }
 
-        ground->DestroyFixture(ground->GetFixtureList());
+        // Properly destroy all fixtures attached to the ground body
+        b2Fixture* fixture = ground->GetFixtureList();
+        while (fixture) {
+            b2Fixture* next = fixture->GetNext();
+            ground->DestroyFixture(fixture);
+            fixture = next;
+        }
+        // Recreate the chain shape with the new points
         if (!points.empty()) {
             b2ChainShape chain;
             chain.CreateChain(points.data(), static_cast<int32>(points.size()), b2Vec2(0.0f, 0.0f), b2Vec2(0.0f, 0.0f));
@@ -74,6 +85,7 @@ void Terrain::extendIfNeeded(float bikeX, std::mt19937& gen) {
 }
 
 void Terrain::render(sf::RenderWindow& window) {
+    // Render the terrain as a series of thick green lines
     float lineThickness = 5.0f;
     float step = 30.0f;
     for (size_t i = 0; i < terrainVisual.size() - 1; ++i) {
